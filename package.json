@@ -1,0 +1,58 @@
+{
+	"name": "ratk",
+	"version": "0.1.0",
+	"description": "WebXR mixed reality utilities library",
+	"main": "dist/index.js",
+	"types": "dist/index.d.ts",
+	"files": [
+		"dist"
+	],
+	"scripts": {
+		"build:ratk": "tsc",
+		"build:example": "cd example && npm run build",
+		"build": "npm run build:ratk && npm run build:example",
+		"doc": "npm run build && typedoc && mv example/dist/ docs/example",
+		"format": "prettier --write ./src/**/*",
+		"test": "echo \"Error: no test specified\" && exit 1",
+		"prepublishOnly": "npm run build",
+		"watch": "npm-watch"
+	},
+	"watch": {
+		"build:src": {
+			"patterns": [
+				"src"
+			],
+			"extensions": "ts",
+			"quiet": false
+		}
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/meta-quest/reality-accelerator-toolkit.git"
+	},
+	"keywords": [
+		"threejs",
+		"webxr",
+		"webvr"
+	],
+	"author": "Felix Zhang <fe1ix@meta.com>",
+	"license": "MIT",
+	"bugs": {
+		"url": "https://github.com/meta-quest/reality-accelerator-toolkit/issues"
+	},
+	"homepage": "https://github.com/meta-quest/reality-accelerator-toolkit#readme",
+	"devDependencies": {
+		"@types/node": "^18.7.13",
+		"@types/three": "^0.149.0",
+		"eslint": "^8.23.0",
+		"eslint-config-prettier": "^8.5.0",
+		"npm-watch": "^0.11.0",
+		"prettier": "^2.7.1",
+		"typedoc": "^0.23.21",
+		"typedoc-plugin-extras": "^2.3.0",
+		"typescript": "^4.8.2"
+	},
+	"peerDependencies": {
+		"three": "^0.149.0"
+	}
+}
