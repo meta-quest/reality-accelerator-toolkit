@@ -1,0 +1,22 @@
+{
+	"name": "ratk-example",
+	"private": true,
+	"devDependencies": {
+		"css-loader": "^5.2.1",
+		"html-webpack-plugin": "^5.3.1",
+		"pre-commit": "^1.2.2",
+		"style-loader": "^2.0.0",
+		"webpack": "^5.33.2",
+		"webpack-cli": "^4.6.0",
+		"webpack-dev-server": "^4.11.1"
+	},
+	"scripts": {
+		"build": "webpack",
+		"serve": "webpack serve"
+	},
+	"dependencies": {
+		"gamepad-wrapper": "^1.2.0",
+		"ratk": "file:..",
+		"three": "^0.149.0"
+	}
+}
