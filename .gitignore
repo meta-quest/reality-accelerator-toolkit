@@ -8,7 +8,8 @@
 !/.yarn/cache
 #/.pnp.*
 
-/dist/
+dist/
+docs/
 node_modules/
 
 /.vscode/
