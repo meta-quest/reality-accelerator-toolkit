@@ -1,9 +1,17 @@
+/**
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
 import { Group, Vector3, WebXRManager } from 'three';
 
 export class HitTestTarget extends Group {
 	private _xrHitTestSource: XRHitTestSource;
 
-	public hitTestResultValid: boolean = false;
+	public hitTestResultValid = false;
+
 	public hitTestResults: XRHitTestResult[];
 
 	constructor(xrHitTestSource: XRHitTestSource) {

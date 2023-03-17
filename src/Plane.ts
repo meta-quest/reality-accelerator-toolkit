@@ -1,3 +1,10 @@
+/**
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
 import {
 	Mesh,
 	MeshBasicMaterial,
@@ -10,10 +17,14 @@ import { TransformObject, updateTransformObject } from './TransformObject';
 export class Plane extends TransformObject {
 	private _xrPlane: XRPlane;
 
-	public needsUpdate: boolean = true;
-	public lastUpdatedByRATK: number = -Infinity;
+	public needsUpdate = true;
+
+	public lastUpdatedByRATK = -Infinity;
+
 	public planeMesh: Mesh;
+
 	public boundingRectangleWidth: number;
+
 	public boundingRectangleHeight: number;
 
 	public constructor(xrPlane: XRPlane) {
