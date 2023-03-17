@@ -70,7 +70,7 @@ export const createHitTestTargetFromSpace = async (
 				x: offsetDirection.x,
 				y: offsetDirection.y,
 				z: offsetDirection.z,
-				w: 1,
+				w: 0,
 			},
 		),
 	});

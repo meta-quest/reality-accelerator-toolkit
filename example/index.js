@@ -8,9 +8,9 @@
 import * as THREE from 'three';
 
 import { BUTTONS, GamepadWrapper } from 'gamepad-wrapper';
+import { DoubleSide, MeshBasicMaterial } from 'three';
 
 import { ARButton } from 'three/examples/jsm/webxr/ARButton';
-import { MeshBasicMaterial } from 'three';
 import { RealityAccelerator } from 'ratk';
 import { XRControllerModelFactory } from 'three/examples/jsm/webxr/XRControllerModelFactory.js';
 
@@ -48,13 +48,16 @@ function init() {
 
 	document.body.appendChild(
 		ARButton.createButton(renderer, {
-			requiredFeatures: ['anchors', 'plane-detection'],
+			requiredFeatures: ['anchors', 'plane-detection', 'hit-test'],
 		}),
 	);
 
 	controller = renderer.xr.getController(0);
-	controller.addEventListener('connected', function (event) {
+	controller.addEventListener('connected', async function (event) {
 		this.gamepadWrapper = new GamepadWrapper(event.data.gamepad);
+		this.hitTestTarget = await ratk.createHitTestTargetFromControllerSpace(
+			event.data.handedness,
+		);
 	});
 	controller.addEventListener('disconnected', function () {
 		this.remove(this.children[0]);
@@ -81,18 +84,22 @@ function init() {
 			transparent: true,
 			opacity: 0.5,
 			color: Math.random() * 0xffffff,
+			side: DoubleSide,
 		});
 	};
 	scene.add(ratk.root);
 }
 
 function updateController(controller) {
-	if (controller.gamepadWrapper) {
+	if (controller.gamepadWrapper && controller.hitTestTarget) {
 		controller.gamepadWrapper.update();
 		if (controller.gamepadWrapper.getButtonClick(BUTTONS.XR_STANDARD.TRIGGER)) {
 			// RATK code
 			ratk
-				.createAnchor(controller.position, controller.quaternion)
+				.createAnchor(
+					controller.hitTestTarget.position,
+					controller.hitTestTarget.quaternion,
+				)
 				.then((anchor) => {
 					const geometry = new THREE.BoxGeometry(0.05, 0.05, 0.05);
 					const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
