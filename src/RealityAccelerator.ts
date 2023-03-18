@@ -23,9 +23,13 @@ import { updateTransformObject } from './TransformObject';
 
 export class RealityAccelerator {
 	private _xrManager: WebXRManager;
+
 	private _planes: Set<Plane>;
+
 	private _anchors: Set<Anchor>;
+
 	private _hitTestTargets: Set<HitTestTarget>;
+
 	private _root: Group;
 
 	public constructor(xrManager: WebXRManager) {
@@ -58,8 +62,9 @@ export class RealityAccelerator {
 		);
 	}
 
-	public onPlaneAdded = (_plane: Plane) => {};
-	public onPlaneDeleted = (_plane: Plane) => {};
+	public onPlaneAdded: (_arg: Plane) => void;
+
+	public onPlaneDeleted: (_arg: Plane) => void;
 
 	public update() {
 		if (!this._xrManager.isPresenting) return;
@@ -81,6 +86,7 @@ export class RealityAccelerator {
 	}
 
 	private _checkPlaneDiff(frame: XRFrame) {
+		// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 		// @ts-ignore
 		const detectedPlanes = frame.detectedPlanes as XRPlaneSet;
 
@@ -104,12 +110,16 @@ export class RealityAccelerator {
 			const plane = new Plane(xrPlane);
 			updatePlane(plane, this._xrManager);
 			this._root.add(plane);
-			this.onPlaneAdded(plane);
+			if (this.onPlaneAdded) {
+				this.onPlaneAdded(plane);
+			}
 			this._planes.add(plane);
 		});
 
 		deletedPlanes.forEach((plane) => {
-			this.onPlaneDeleted(plane);
+			if (this.onPlaneDeleted) {
+				this.onPlaneDeleted(plane);
+			}
 			this._root.remove(plane);
 			this._planes.delete(plane);
 		});
@@ -118,7 +128,7 @@ export class RealityAccelerator {
 	public async createAnchor(
 		position: Vector3,
 		quaternion: Quaternion,
-		persistent: boolean = false,
+		persistent = false,
 	) {
 		const anchor = await createAnchorFromTransform(
 			this._xrManager,
@@ -128,13 +138,13 @@ export class RealityAccelerator {
 		this._root.add(anchor);
 		this._anchors.add(anchor);
 		if (persistent) {
-			await anchor.makeNonPersistent();
+			await anchor.makePersistent();
 		}
 		return anchor;
 	}
 
-	public async deleteAnchor(anchor: Anchor, deletePersistence: boolean = true) {
-		if (deletePersistence && anchor.isPersistent) {
+	public async deleteAnchor(anchor: Anchor) {
+		if (anchor.isPersistent) {
 			await deleteAnchorPersistence(anchor, this._xrManager);
 		}
 		this._anchors.delete(anchor);
@@ -144,6 +154,7 @@ export class RealityAccelerator {
 
 	public async restorePersistentAnchors() {
 		const session = this._xrManager.getSession();
+		// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 		// @ts-ignore
 		const persistentAnchors = session.persistentAnchors;
 		if (!persistentAnchors) {

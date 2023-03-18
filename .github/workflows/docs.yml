@@ -41,6 +41,10 @@ jobs:
 
       - name: Install
         run: npm install
+        run: npm run build:ratk
+        run: cd example
+        run: npm install
+        run: cd ..
 
       - name: Build
         run: npm run doc

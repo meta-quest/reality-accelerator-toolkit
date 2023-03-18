@@ -47,7 +47,7 @@ export class Anchor extends TransformObject {
 
 		// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 		// @ts-ignore
-		this._anchorID = await this._xrAnchor.requestPersistentHandle();
+		this.anchorID = await this._xrAnchor.requestPersistentHandle();
 	}
 
 	public async makeNonPersistent() {
@@ -120,7 +120,7 @@ export const deleteAnchorPersistence = async (
 
 		// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 		// @ts-ignore
-		await session.deletePersistentAnchor(this.anchorID);
+		await session.deletePersistentAnchor(anchor.anchorID);
 		anchor.anchorID = null;
 	}
 };

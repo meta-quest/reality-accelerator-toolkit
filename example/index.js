@@ -17,7 +17,7 @@ import { XRControllerModelFactory } from 'three/examples/jsm/webxr/XRControllerM
 let camera, scene, renderer, controller;
 /** @type {RealityAccelerator} */
 let ratk;
-let lastAnchor;
+let recoveredPersistentAnchors = false;
 
 init();
 animate();
@@ -99,17 +99,21 @@ function updateController(controller) {
 				.createAnchor(
 					controller.hitTestTarget.position,
 					controller.hitTestTarget.quaternion,
+					true,
 				)
 				.then((anchor) => {
 					const geometry = new THREE.BoxGeometry(0.05, 0.05, 0.05);
 					const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
 					const cube = new THREE.Mesh(geometry, material);
 					anchor.add(cube);
-					lastAnchor = anchor;
+					console.log(anchor.isPersistent, anchor.anchorID);
 				});
 		}
 		if (controller.gamepadWrapper.getButtonClick(BUTTONS.XR_STANDARD.SQUEEZE)) {
-			if (lastAnchor) ratk.deleteAnchor(lastAnchor);
+			ratk.anchors.forEach((anchor) => {
+				console.log(anchor.anchorID);
+				ratk.deleteAnchor(anchor);
+			});
 		}
 	}
 }
@@ -126,6 +130,21 @@ function animate() {
 }
 
 function render() {
+	if (renderer.xr.isPresenting && !recoveredPersistentAnchors) {
+		setTimeout(() => {
+			ratk.restorePersistentAnchors().then(() => {
+				ratk.anchors.forEach((anchor) => {
+					console.log(anchor);
+					const geometry = new THREE.BoxGeometry(0.05, 0.05, 0.05);
+					const material = new THREE.MeshBasicMaterial({ color: 0x0ffff0 });
+					const cube = new THREE.Mesh(geometry, material);
+					anchor.add(cube);
+				});
+			});
+		}, 1000);
+
+		recoveredPersistentAnchors = true;
+	}
 	updateController(controller);
 
 	// RATK code
