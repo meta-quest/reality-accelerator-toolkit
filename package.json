@@ -8,9 +8,9 @@
 		"dist"
 	],
 	"scripts": {
-		"build:ratk": "tsc",
-		"build:example": "cd example && npm run build",
-		"build": "npm run build:ratk && npm run build:example",
+		"buildLibrary": "tsc",
+		"buildExample": "cd example && npm run build",
+		"build": "npm run buildLibrary && npm run buildExample",
 		"doc": "npm run build && typedoc && mv example/dist/ docs/example",
 		"lint": "eslint ./src",
 		"format": "prettier --write ./src/**/*",
