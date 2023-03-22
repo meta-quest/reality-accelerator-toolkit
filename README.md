@@ -1,6 +1,11 @@
 # Reality Accelerator Toolkit
 
-Reality Accelerator Toolkit is a WebXR utilities library designed to simplify the integration of mixed reality features in WebXR applications. It is currently compatible with the [three.js]() 3D library and aims to bridge the gap between low-level WebXR APIs and higher-level APIs provided by three.js. The library is built with the intent to be extensible and compatible with other 3D libraries in the future. It is designed to manage detected planes, anchors, and real-world hit test targets, and to automatically translate them to Object3D instances in the three.js scene, making it easier for developers to access and utilize them.
+[![npm version](https://badge.fury.io/js/ratk.svg)](https://badge.fury.io/js/ratk)
+[![language](https://badgen.net/badge/icon/typescript?icon=typescript&label)](https://www.typescriptlang.org/)
+[![npm download](https://badgen.net/npm/dw/ratk)](https://www.npmjs.com/package/ratk)
+[![license](https://badgen.net/github/license/meta-quest/reality-accelerator-toolkit)](/LICENSE.md)
+
+Reality Accelerator Toolkit is a WebXR utilities library designed to simplify the integration of mixed reality features in [WebXR](https://immersiveweb.dev/) applications. It is currently compatible with the [three.js](https://threejs.org/) 3D library and aims to bridge the gap between low-level WebXR APIs and higher-level APIs provided by three.js. The library is built with the intent to be extensible and compatible with other 3D libraries in the future. It is designed to manage detected planes, anchors, and real-world hit test targets, and to automatically translate them to Object3D instances in the three.js scene, making it easier for developers to access and utilize them.
 
 ## Features
 
