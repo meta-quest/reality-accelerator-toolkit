@@ -34,7 +34,12 @@
 	"keywords": [
 		"threejs",
 		"webxr",
-		"webvr"
+		"vr",
+		"ar",
+		"mr",
+		"mixedreality",
+		"typescript",
+		"sdk"
 	],
 	"author": "Felix Zhang <fe1ix@meta.com>",
 	"license": "MIT",
