@@ -36,6 +36,10 @@ export class Plane extends TransformObject {
 		return this._xrPlane;
 	}
 
+	get orientation() {
+		return this._xrPlane.orientation;
+	}
+
 	get lastUpdated() {
 		return this._xrPlane.lastChangedTime;
 	}
