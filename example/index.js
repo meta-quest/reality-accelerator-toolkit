@@ -10,7 +10,7 @@ import * as THREE from 'three';
 import { BUTTONS, GamepadWrapper } from 'gamepad-wrapper';
 import { DoubleSide, MeshBasicMaterial } from 'three';
 
-import { ARButton } from 'three/examples/jsm/webxr/ARButton';
+import { ARButton } from 'ratk';
 import { RealityAccelerator } from 'ratk';
 import { XRControllerModelFactory } from 'three/examples/jsm/webxr/XRControllerModelFactory.js';
 
@@ -46,11 +46,22 @@ function init() {
 	renderer.xr.enabled = true;
 	document.body.appendChild(renderer.domElement);
 
-	document.body.appendChild(
-		ARButton.createButton(renderer, {
-			requiredFeatures: ['anchors', 'plane-detection', 'hit-test'],
-		}),
-	);
+	const arButton = document.getElementById('ar-button');
+	const webLaunchButton = document.getElementById('web-launch-button');
+	webLaunchButton.onclick = () => {
+		window.open(
+			'https://www.oculus.com/open_url/?url=' +
+				encodeURIComponent(window.location.href),
+		);
+	};
+
+	ARButton.convertToARButton(arButton, renderer, {
+		requiredFeatures: ['anchors', 'plane-detection', 'hit-test'],
+		onUnsupported: () => {
+			arButton.style.display = 'none';
+			webLaunchButton.style.display = 'block';
+		},
+	});
 
 	controller = renderer.xr.getController(0);
 	controller.addEventListener('connected', async function (event) {
