@@ -10,4 +10,4 @@ export { Anchor } from './Anchor';
 export { Plane } from './Plane';
 export { HitTestTarget } from './HitTestTarget';
 export { RealityAccelerator } from './RealityAccelerator';
-export { ARButton, ARButtonOptions } from './ARButton';
+export { ARButton, VRButton, XRButtonOptions } from './XRButton';
