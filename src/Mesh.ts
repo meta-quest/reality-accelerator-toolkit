@@ -51,6 +51,10 @@ export class RMesh extends TransformObject {
 	get lastUpdated() {
 		return this._xrMesh.lastChangedTime;
 	}
+
+	get semanticLabel() {
+		return this._xrMesh.semanticLabel;
+	}
 }
 
 export const updateMesh = (mesh: RMesh, xrManager: WebXRManager) => {

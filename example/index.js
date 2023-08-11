@@ -8,10 +8,11 @@
 import * as THREE from 'three';
 
 import { BUTTONS, GamepadWrapper } from 'gamepad-wrapper';
-import { DoubleSide, MeshBasicMaterial } from 'three';
 
 import { ARButton } from 'ratk';
+import { MeshBasicMaterial } from 'three';
 import { RealityAccelerator } from 'ratk';
+import { Text } from 'troika-three-text';
 import { XRControllerModelFactory } from 'three/examples/jsm/webxr/XRControllerModelFactory.js';
 
 let camera, scene, renderer, controller;
@@ -56,7 +57,12 @@ function init() {
 	};
 
 	ARButton.convertToARButton(arButton, renderer, {
-		requiredFeatures: ['anchors', 'plane-detection', 'hit-test'],
+		requiredFeatures: [
+			'anchors',
+			'plane-detection',
+			'hit-test',
+			'mesh-detection',
+		],
 		onUnsupported: () => {
 			arButton.style.display = 'none';
 			webLaunchButton.style.display = 'block';
@@ -89,14 +95,30 @@ function init() {
 	// RATK code
 	ratk = new RealityAccelerator(renderer.xr);
 	ratk.onPlaneAdded = (plane) => {
-		console.log(plane);
 		const mesh = plane.planeMesh;
 		mesh.material = new MeshBasicMaterial({
-			transparent: true,
-			opacity: 0.5,
+			wireframe: true,
 			color: Math.random() * 0xffffff,
-			side: DoubleSide,
 		});
+	};
+	ratk.onMeshAdded = (mesh) => {
+		const meshMesh = mesh.meshMesh;
+		meshMesh.material = new MeshBasicMaterial({
+			wireframe: true,
+			color: Math.random() * 0xffffff,
+		});
+		meshMesh.geometry.computeBoundingBox();
+		console.log(meshMesh.geometry.boundingBox);
+		const semanticLabel = new Text();
+		meshMesh.add(semanticLabel);
+		semanticLabel.text = mesh.semanticLabel;
+		semanticLabel.anchorX = 'center';
+		semanticLabel.anchorY = 'bottom';
+		semanticLabel.fontSize = 0.1;
+		semanticLabel.color = 0x000000;
+		semanticLabel.sync();
+		semanticLabel.position.y = meshMesh.geometry.boundingBox.max.y;
+		mesh.userData.semanticLabelMesh = semanticLabel;
 	};
 	scene.add(ratk.root);
 }
@@ -156,10 +178,15 @@ function render() {
 
 		recoveredPersistentAnchors = true;
 	}
+
 	updateController(controller);
 
 	// RATK code
 	ratk.update();
+	ratk.meshes.forEach((mesh) => {
+		const semanticLabel = mesh.userData.semanticLabelMesh;
+		semanticLabel.lookAt(camera.position);
+	});
 
 	renderer.render(scene, camera);
 }
