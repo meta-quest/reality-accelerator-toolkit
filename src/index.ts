@@ -8,6 +8,7 @@
 export { TransformObject } from './TransformObject';
 export { Anchor } from './Anchor';
 export { Plane } from './Plane';
+export { RMesh } from './Mesh';
 export { HitTestTarget } from './HitTestTarget';
 export { RealityAccelerator } from './RealityAccelerator';
 export { ARButton, VRButton, XRButtonOptions } from './XRButton';

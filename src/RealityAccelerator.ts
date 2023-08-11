@@ -18,6 +18,7 @@ import {
 	updateHitTestTarget,
 } from './HitTestTarget';
 import { Plane, updatePlane } from './Plane';
+import { RMesh, XRMesh, XRMeshSet, updateMesh } from './Mesh';
 
 import { updateTransformObject } from './TransformObject';
 
@@ -25,6 +26,8 @@ export class RealityAccelerator {
 	private _xrManager: WebXRManager;
 
 	private _planes: Set<Plane>;
+
+	private _meshes: Set<RMesh>;
 
 	private _anchors: Set<Anchor>;
 
@@ -35,6 +38,7 @@ export class RealityAccelerator {
 	public constructor(xrManager: WebXRManager) {
 		this._xrManager = xrManager;
 		this._planes = new Set();
+		this._meshes = new Set();
 		this._anchors = new Set();
 		this._hitTestTargets = new Set();
 		this._root = new Group();
@@ -46,6 +50,10 @@ export class RealityAccelerator {
 
 	get planes() {
 		return this._planes;
+	}
+
+	get meshes() {
+		return this._meshes;
 	}
 
 	get anchors() {
@@ -66,6 +74,10 @@ export class RealityAccelerator {
 
 	public onPlaneDeleted: (_arg: Plane) => void;
 
+	public onMeshAdded: (_arg: RMesh) => void;
+
+	public onMeshDeleted: (_arg: RMesh) => void;
+
 	public update() {
 		if (!this._xrManager.isPresenting) return;
 		const frame = this._xrManager.getFrame();
@@ -74,6 +86,12 @@ export class RealityAccelerator {
 
 		this.planes.forEach((plane) => {
 			updatePlane(plane, this._xrManager);
+		});
+
+		this._checkMeshDiff(frame);
+
+		this.meshes.forEach((mesh) => {
+			updateMesh(mesh, this._xrManager);
 		});
 
 		this.anchors.forEach((anchor) => {
@@ -122,6 +140,46 @@ export class RealityAccelerator {
 			}
 			this._root.remove(plane);
 			this._planes.delete(plane);
+		});
+	}
+
+	private _checkMeshDiff(frame: XRFrame) {
+		// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+		// @ts-ignore
+		const detectedMeshes = frame.detectedMeshes as XRMeshSet;
+
+		const newXrMeshes: XRMesh[] = [];
+		detectedMeshes.forEach((xrMesh) => {
+			let match = false;
+			this._meshes.forEach((mesh) => {
+				if (mesh.xrMesh === xrMesh) match = true;
+			});
+			if (!match) newXrMeshes.push(xrMesh);
+		});
+
+		const deletedMeshes: RMesh[] = [];
+		this._meshes.forEach((mesh) => {
+			if (!detectedMeshes.has(mesh.xrMesh)) {
+				deletedMeshes.push(mesh);
+			}
+		});
+
+		newXrMeshes.forEach((xrMesh) => {
+			const mesh = new RMesh(xrMesh);
+			updateMesh(mesh, this._xrManager);
+			this._root.add(mesh);
+			if (this.onMeshAdded) {
+				this.onMeshAdded(mesh);
+			}
+			this._meshes.add(mesh);
+		});
+
+		deletedMeshes.forEach((mesh) => {
+			if (this.onMeshDeleted) {
+				this.onMeshDeleted(mesh);
+			}
+			this._root.remove(mesh);
+			this._meshes.delete(mesh);
 		});
 	}
 

@@ -77,8 +77,8 @@ const calculateBoundingRectangleDimension = (polygon: DOMPointReadOnly[]) => {
 };
 
 export const updatePlane = (plane: Plane, xrManager: WebXRManager) => {
-	if (plane.xrPlane.lastChangedTime <= plane.lastUpdatedByRATK) return;
 	updateTransformObject(plane, xrManager);
+	if (plane.xrPlane.lastChangedTime <= plane.lastUpdatedByRATK) return;
 
 	const planeGeometry = createGeometryFromPolygon(plane.xrPlane.polygon);
 	if (plane.planeMesh) {
