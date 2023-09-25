@@ -36,7 +36,6 @@ export class ARButton {
 
 			async function onSessionStarted(session: XRSession) {
 				session.addEventListener('end', onSessionEnded);
-				renderer.xr.setReferenceSpaceType('local');
 				await renderer.xr.setSession(session);
 				button.textContent = options.LEAVE_XR_TEXT ?? 'EXIT AR';
 				currentSession = session;
