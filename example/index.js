@@ -62,6 +62,7 @@ function init() {
 			'plane-detection',
 			'hit-test',
 			'mesh-detection',
+			'local-floor'
 		],
 		onUnsupported: () => {
 			arButton.style.display = 'none';
