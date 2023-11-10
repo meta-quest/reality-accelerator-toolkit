@@ -35,6 +35,8 @@ export class RealityAccelerator {
 
 	private _root: Group;
 
+	private _currentSession: XRSession;
+
 	public constructor(xrManager: WebXRManager) {
 		this._xrManager = xrManager;
 		this._planes = new Set();
@@ -42,6 +44,7 @@ export class RealityAccelerator {
 		this._anchors = new Set();
 		this._hitTestTargets = new Set();
 		this._root = new Group();
+		this._currentSession = xrManager.getSession();
 	}
 
 	get root() {
@@ -82,6 +85,12 @@ export class RealityAccelerator {
 		if (!this._xrManager.isPresenting) return;
 		const frame = this._xrManager.getFrame();
 
+		const session = this._xrManager.getSession();
+		if (session !== this._currentSession) {
+			this._currentSession = session;
+			this._sessionUpdated()
+		}
+
 		this._checkPlaneDiff(frame);
 
 		this.planes.forEach((plane) => {
@@ -100,6 +109,19 @@ export class RealityAccelerator {
 
 		this._hitTestTargets.forEach((hitTestTarget) => {
 			updateHitTestTarget(hitTestTarget, this._xrManager);
+		});
+	}
+
+	private async _sessionUpdated() {
+
+		this._anchors.forEach((anchor) => {
+			this._anchors.delete(anchor);
+			this._root.remove(anchor);
+		})
+
+		this._hitTestTargets.forEach((hitTestTarget) => {
+			this._root.remove(hitTestTarget);
+			this._hitTestTargets.delete(hitTestTarget);
 		});
 	}
 

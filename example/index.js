@@ -80,6 +80,8 @@ function init() {
 	controller.addEventListener('disconnected', function () {
 		this.remove(this.children[0]);
 		this.gamepadWrapper = null;
+		ratk.deleteHitTestTarget(this.hitTestTarget)
+		this.hitTestTarget = null;
 	});
 	scene.add(controller);
 
@@ -178,6 +180,10 @@ function render() {
 		}, 1000);
 
 		recoveredPersistentAnchors = true;
+	}
+
+	if (renderer.xr.isPresenting) {
+		recoveredPersistentAnchors = false;
 	}
 
 	updateController(controller);
