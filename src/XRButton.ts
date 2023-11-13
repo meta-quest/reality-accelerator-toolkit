@@ -32,7 +32,7 @@ export class ARButton {
 				optionalFeatures: options.optionalFeatures ?? [],
 			};
 
-			let currentSession: XRSession;
+			let currentSession: XRSession | null;
 
 			async function onSessionStarted(session: XRSession) {
 				session.addEventListener('end', onSessionEnded);
@@ -45,26 +45,30 @@ export class ARButton {
 			}
 
 			function onSessionEnded() {
-				currentSession.removeEventListener('end', onSessionEnded);
-				button.textContent = options.ENTER_XR_TEXT ?? 'ENTER AR';
-				if (options.onSessionEnded) {
-					options.onSessionEnded(currentSession);
+				if (currentSession) {
+					currentSession.removeEventListener('end', onSessionEnded);
+					button.textContent = options.ENTER_XR_TEXT ?? 'ENTER AR';
+					if (options.onSessionEnded) {
+						options.onSessionEnded(currentSession);
+					}
+					currentSession = null;
 				}
-				currentSession = null;
 			}
 
 			button.textContent = options.ENTER_XR_TEXT ?? 'ENTER AR';
 
 			button.onclick = function () {
 				if (!currentSession) {
-					navigator.xr
-						.requestSession('immersive-ar', sessionInit)
-						.then(onSessionStarted)
-						.catch((reason) => {
-							if (options.onFeaturesUnsupported) {
-								options.onFeaturesUnsupported(reason);
-							}
-						});
+					if (navigator.xr) {
+						navigator.xr
+							.requestSession('immersive-ar', sessionInit)
+							.then(onSessionStarted)
+							.catch((reason) => {
+								if (options.onFeaturesUnsupported) {
+									options.onFeaturesUnsupported(reason);
+								}
+							});
+					}
 				} else {
 					currentSession.end();
 				}
@@ -97,7 +101,7 @@ export class ARButton {
 			}
 		}
 
-		if ('xr' in navigator) {
+		if (navigator.xr) {
 			navigator.xr
 				.isSessionSupported('immersive-ar')
 				.then(function (supported) {
@@ -130,7 +134,7 @@ export class VRButton {
 				requiredFeatures: options.requiredFeatures ?? [],
 				optionalFeatures: options.optionalFeatures ?? ['local-floor'],
 			};
-			let currentSession: XRSession;
+			let currentSession: XRSession | null;
 
 			async function onSessionStarted(session: XRSession) {
 				session.addEventListener('end', onSessionEnded);
@@ -141,24 +145,28 @@ export class VRButton {
 			}
 
 			function onSessionEnded() {
-				currentSession.removeEventListener('end', onSessionEnded);
-				button.textContent = options.ENTER_XR_TEXT ?? 'ENTER VR';
-				if (options.onSessionEnded) options.onSessionEnded(currentSession);
-				currentSession = null;
+				if (currentSession) {
+					currentSession.removeEventListener('end', onSessionEnded);
+					button.textContent = options.ENTER_XR_TEXT ?? 'ENTER VR';
+					if (options.onSessionEnded) options.onSessionEnded(currentSession);
+					currentSession = null;
+				}
 			}
 
 			button.textContent = options.ENTER_XR_TEXT ?? 'ENTER VR';
 
 			button.onclick = function () {
 				if (!currentSession) {
-					navigator.xr
-						.requestSession('immersive-vr', sessionInit)
-						.then(onSessionStarted)
-						.catch((reason) => {
-							if (options.onFeaturesUnsupported) {
-								options.onFeaturesUnsupported(reason);
-							}
-						});
+					if (navigator.xr) {
+						navigator.xr
+							.requestSession('immersive-vr', sessionInit)
+							.then(onSessionStarted)
+							.catch((reason) => {
+								if (options.onFeaturesUnsupported) {
+									options.onFeaturesUnsupported(reason);
+								}
+							});
+					}
 				} else {
 					currentSession.end();
 				}
@@ -187,7 +195,7 @@ export class VRButton {
 			if (options.onNotAllowed) options.onNotAllowed(exception);
 		}
 
-		if ('xr' in navigator) {
+		if (navigator.xr) {
 			navigator.xr
 				.isSessionSupported('immersive-vr')
 				.then(function (supported) {
@@ -206,7 +214,7 @@ export class VRButton {
 	static xrSessionIsGranted = false;
 
 	static registerSessionGrantedListener() {
-		if ('xr' in navigator) {
+		if (navigator.xr) {
 			// WebXRViewer (based on Firefox) has a bug where addEventListener
 			// throws a silent exception and aborts execution entirely.
 			if (/WebXRViewer\//i.test(navigator.userAgent)) return;

@@ -12,7 +12,7 @@ export class HitTestTarget extends Group {
 
 	public hitTestResultValid = false;
 
-	public hitTestResults: XRHitTestResult[];
+	public hitTestResults: XRHitTestResult[] = [];
 
 	constructor(xrHitTestSource: XRHitTestSource) {
 		super();
@@ -30,12 +30,18 @@ export const updateHitTestTarget = (
 ) => {
 	const frame = xrManager.getFrame();
 	const refSpace = xrManager.getReferenceSpace();
+	if (!refSpace) {
+		throw 'renderer.xr.getReferenceSpace() returned null';
+	}
 	hitTestTarget.hitTestResults = frame.getHitTestResults(
 		hitTestTarget.xrHitTestSource,
 	);
 	hitTestTarget.hitTestResultValid = false;
 	if (hitTestTarget.hitTestResults.length > 0) {
 		const hitPose = hitTestTarget.hitTestResults[0].getPose(refSpace);
+		if (!hitPose) {
+			throw 'hitPose is not available';
+		}
 		hitTestTarget.position.set(
 			hitPose.transform.position.x,
 			hitPose.transform.position.y,
@@ -57,7 +63,14 @@ export const createHitTestTargetFromSpace = async (
 	offsetOrigin: Vector3,
 	offsetDirection: Vector3,
 ) => {
-	const xrHitTestSource = await xrManager.getSession().requestHitTestSource({
+	const session = xrManager.getSession();
+	if (!session) {
+		throw 'renderer.xr.getSession() returned null';
+	}
+	if (!session.requestHitTestSource) {
+		throw 'session.requestHitTestSource is undefined';
+	}
+	const xrHitTestSource = await session.requestHitTestSource({
 		space: space,
 		offsetRay: new XRRay(
 			{
@@ -74,6 +87,9 @@ export const createHitTestTargetFromSpace = async (
 			},
 		),
 	});
+	if (!xrHitTestSource) {
+		throw 'XRHitTestSource request failed';
+	}
 	const hitTestTarget = new HitTestTarget(xrHitTestSource);
 	return hitTestTarget;
 };

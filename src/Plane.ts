@@ -21,11 +21,11 @@ export class Plane extends TransformObject {
 
 	public lastUpdatedByRATK = -Infinity;
 
-	public planeMesh: Mesh;
+	public planeMesh?: Mesh;
 
-	public boundingRectangleWidth: number;
+	public boundingRectangleWidth = 0;
 
-	public boundingRectangleHeight: number;
+	public boundingRectangleHeight = 0;
 
 	public constructor(xrPlane: XRPlane) {
 		super(xrPlane.planeSpace);

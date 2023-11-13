@@ -30,8 +30,14 @@ export const updateTransformObject = (
 ) => {
 	const frame = xrManager.getFrame();
 	const refSpace = xrManager.getReferenceSpace();
-
+	if (!refSpace) {
+		throw 'renderer.xr.getReferenceSpace() returned null';
+	}
 	const pose = frame.getPose(transformObject.xrSpace, refSpace);
+
+	if (!pose) {
+		throw 'pose is not available';
+	}
 	new Matrix4()
 		.fromArray(pose.transform.matrix)
 		.decompose(transformObject.position, transformObject.quaternion, tempVec3);

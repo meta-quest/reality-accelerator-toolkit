@@ -21,7 +21,7 @@ export class RMesh extends TransformObject {
 
 	public lastUpdatedByRATK = -Infinity;
 
-	public meshMesh: Mesh;
+	public meshMesh?: Mesh;
 
 	public constructor(xrMesh: XRMesh) {
 		super(xrMesh.meshSpace);

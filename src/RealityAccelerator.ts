@@ -35,7 +35,7 @@ export class RealityAccelerator {
 
 	private _root: Group;
 
-	private _currentSession: XRSession;
+	private _currentSession?: XRSession;
 
 	public constructor(xrManager: WebXRManager) {
 		this._xrManager = xrManager;
@@ -44,7 +44,6 @@ export class RealityAccelerator {
 		this._anchors = new Set();
 		this._hitTestTargets = new Set();
 		this._root = new Group();
-		this._currentSession = xrManager.getSession();
 	}
 
 	get root() {
@@ -73,13 +72,13 @@ export class RealityAccelerator {
 		);
 	}
 
-	public onPlaneAdded: (_arg: Plane) => void;
+	public onPlaneAdded?: (_arg: Plane) => void;
 
-	public onPlaneDeleted: (_arg: Plane) => void;
+	public onPlaneDeleted?: (_arg: Plane) => void;
 
-	public onMeshAdded: (_arg: RMesh) => void;
+	public onMeshAdded?: (_arg: RMesh) => void;
 
-	public onMeshDeleted: (_arg: RMesh) => void;
+	public onMeshDeleted?: (_arg: RMesh) => void;
 
 	public update() {
 		if (!this._xrManager.isPresenting) return;
@@ -87,8 +86,8 @@ export class RealityAccelerator {
 
 		const session = this._xrManager.getSession();
 		if (session !== this._currentSession) {
-			this._currentSession = session;
-			this._sessionUpdated();
+			this._currentSession = session ?? undefined;
+			this._handleSessionUpdate();
 		}
 
 		this._checkPlaneDiff(frame);
@@ -112,7 +111,7 @@ export class RealityAccelerator {
 		});
 	}
 
-	private async _sessionUpdated() {
+	private async _handleSessionUpdate() {
 		this._anchors.forEach((anchor) => {
 			this._anchors.delete(anchor);
 			this._root.remove(anchor);
@@ -270,9 +269,11 @@ export class RealityAccelerator {
 		offsetOrigin: Vector3 = new Vector3(0, 0, 0),
 		offsetDirection: Vector3 = new Vector3(0, 0, -1),
 	) {
-		const viewerSpace = await this._xrManager
-			.getSession()
-			.requestReferenceSpace('viewer');
+		const session = this._xrManager.getSession();
+		if (!session) {
+			throw 'renderer.xr.getSession() returned null';
+		}
+		const viewerSpace = await session.requestReferenceSpace('viewer');
 		return await this.createHitTestTargetFromSpace(
 			viewerSpace,
 			offsetOrigin,
@@ -285,21 +286,22 @@ export class RealityAccelerator {
 		offsetOrigin: Vector3 = new Vector3(0, 0, 0),
 		offsetDirection: Vector3 = new Vector3(0, 0, -1),
 	) {
-		let xrInputSource: XRInputSource = null;
-		this._xrManager.getSession().inputSources.forEach((source) => {
-			if (source.handedness === handedness) {
-				xrInputSource = source;
+		const session = this._xrManager.getSession();
+		if (!session) {
+			throw 'renderer.xr.getSession() returned null';
+		}
+		for (const xrInputSource of session.inputSources) {
+			if (xrInputSource.handedness === handedness) {
+				return await this.createHitTestTargetFromSpace(
+					xrInputSource.targetRaySpace,
+					offsetOrigin,
+					offsetDirection,
+				);
 			}
-		});
-		if (!xrInputSource)
-			throw new DOMException(
-				'requested XRInputSource cannot be found',
-				'NotFoundError',
-			);
-		return await this.createHitTestTargetFromSpace(
-			xrInputSource.targetRaySpace,
-			offsetOrigin,
-			offsetDirection,
+		}
+		throw new DOMException(
+			'requested XRInputSource cannot be found',
+			'NotFoundError',
 		);
 	}
 

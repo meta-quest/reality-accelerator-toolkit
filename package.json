@@ -2,28 +2,19 @@
 	"name": "ratk",
 	"version": "0.2.1",
 	"description": "WebXR mixed reality utilities library",
-	"main": "dist/index.js",
-	"types": "dist/index.d.ts",
+	"main": "lib/index.js",
+	"types": "lib/index.d.ts",
 	"files": [
-		"dist"
+		"build",
+		"lib"
 	],
 	"scripts": {
-		"build": "tsc && rimraf *.tgz && npm pack && mv *.tgz ratk-build.tgz",
+		"build": "tsc && rollup -c && rimraf *.tgz && npm pack && mv *.tgz ratk-build.tgz",
 		"doc": "typedoc && mv example/dist/ docs/example",
-		"lint": "eslint ./src",
+		"lint": "eslint 'src/**/*.{js,ts,tsx}' --fix",
 		"format": "prettier --write ./src/**/*",
 		"test": "echo \"Error: no test specified\" && exit 1",
-		"prepublishOnly": "npm run build",
-		"watch": "npm-watch"
-	},
-	"watch": {
-		"build:src": {
-			"patterns": [
-				"src"
-			],
-			"extensions": "ts",
-			"quiet": false
-		}
+		"prepublishOnly": "npm run build"
 	},
 	"repository": {
 		"type": "git",
@@ -46,16 +37,20 @@
 	},
 	"homepage": "https://github.com/meta-quest/reality-accelerator-toolkit#readme",
 	"devDependencies": {
+		"@rollup/plugin-commonjs": "^25.0.7",
+		"@rollup/plugin-node-resolve": "^15.2.3",
 		"@types/node": "^18.7.13",
 		"@types/three": "^0.149.0",
 		"@types/webxr": "^0.5.8",
 		"@typescript-eslint/eslint-plugin": "^5.55.0",
 		"@typescript-eslint/parser": "^5.55.0",
 		"eslint": "^8.36.0",
-		"eslint-config-prettier": "^8.5.0",
-		"npm-watch": "^0.11.0",
-		"prettier": "^2.7.1",
+		"eslint-config-prettier": "^8.10.0",
+		"eslint-plugin-prettier": "^5.0.1",
+		"prettier": "^3.0.3",
 		"rimraf": "^5.0.5",
+		"rollup": "^2.79.1",
+		"rollup-plugin-terser": "^7.0.2",
 		"typedoc": "^0.23.21",
 		"typedoc-plugin-extras": "^2.3.0",
 		"typescript": "^4.9.5"

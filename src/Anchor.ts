@@ -14,9 +14,9 @@ export class Anchor extends TransformObject {
 
 	public persistenceDeletionPending = false;
 
-	public anchorID: string;
+	public anchorID?: string;
 
-	constructor(xrAnchor: XRAnchor, uuid: string = null) {
+	constructor(xrAnchor: XRAnchor, uuid?: string) {
 		super(xrAnchor.anchorSpace);
 		this._xrAnchor = xrAnchor;
 		this.anchorID = uuid;
@@ -61,7 +61,13 @@ export const createAnchorFromTransform = async (
 	quaternion: Quaternion,
 ) => {
 	const frame = xrManager.getFrame();
+	if (!frame.createAnchor) {
+		throw 'XRFrame.createAnchor is undefined';
+	}
 	const refSpace = xrManager.getReferenceSpace();
+	if (!refSpace) {
+		throw 'renderer.xr.getReferenceSpace() returned null';
+	}
 	const anchorPose = new XRRigidTransform(
 		{
 			x: position.x,
@@ -77,6 +83,9 @@ export const createAnchorFromTransform = async (
 	);
 
 	const xrAnchor = await frame.createAnchor(anchorPose, refSpace);
+	if (!xrAnchor) {
+		throw 'XRAnchor creation failed';
+	}
 	const anchor = new Anchor(xrAnchor);
 	return anchor;
 };
@@ -121,6 +130,6 @@ export const deleteAnchorPersistence = async (
 		// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 		// @ts-ignore
 		await session.deletePersistentAnchor(anchor.anchorID);
-		anchor.anchorID = null;
+		anchor.anchorID = undefined;
 	}
 };
