@@ -15,7 +15,7 @@
 		"serve": "webpack serve"
 	},
 	"dependencies": {
-		"ratk": "file:../ratk-build.tgz",
+		"ratk": "file:../",
 		"three": "npm:super-three@0.158.0",
 		"troika-three-text": "0.49.0"
 	}

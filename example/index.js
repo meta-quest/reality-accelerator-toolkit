@@ -8,12 +8,16 @@
 import { ARButton, RealityAccelerator } from 'ratk';
 import {
 	BoxGeometry,
+	BufferGeometry,
 	DirectionalLight,
 	HemisphereLight,
+	Line,
 	Mesh,
 	MeshBasicMaterial,
 	PerspectiveCamera,
 	Scene,
+	SphereGeometry,
+	Vector3,
 	WebGLRenderer,
 } from 'three';
 
@@ -126,6 +130,13 @@ function setupController() {
 		controllerModelFactory.createControllerModel(controllerGrip),
 	);
 	scene.add(controllerGrip);
+
+	const geometry = new BufferGeometry().setFromPoints([
+		new Vector3(0, 0, 0),
+		new Vector3(0, 0, -1),
+	]);
+	const line = new Line(geometry);
+	renderer.xr.getController(0).add(line);
 }
 
 /**
@@ -136,6 +147,13 @@ function handleControllerConnected(event) {
 		.createHitTestTargetFromControllerSpace(event.data.handedness)
 		.then((hitTestTarget) => {
 			this.hitTestTarget = hitTestTarget;
+			const geometry = new SphereGeometry(0.05);
+			const material = new MeshBasicMaterial({
+				transparent: true,
+				opacity: 0.5,
+			});
+			const hitTestMarker = new Mesh(geometry, material);
+			this.hitTestTarget.add(hitTestMarker);
 		});
 }
 
@@ -185,6 +203,11 @@ function setupRATK() {
 				});
 			});
 		}, 1000);
+		setTimeout(() => {
+			if (ratk.planes.size == 0) {
+				renderer.xr.getSession().initiateRoomCapture();
+			}
+		}, 5000);
 	});
 }
 
