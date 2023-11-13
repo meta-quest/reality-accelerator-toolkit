@@ -1,6 +1,6 @@
 {
 	"name": "ratk",
-	"version": "0.2.1",
+	"version": "0.3.0",
 	"description": "WebXR mixed reality utilities library",
 	"main": "lib/index.js",
 	"types": "lib/index.d.ts",
