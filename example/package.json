@@ -15,9 +15,8 @@
 		"serve": "webpack serve"
 	},
 	"dependencies": {
-		"gamepad-wrapper": "^1.2.0",
-		"ratk": "file:..",
-		"three": "^0.149.0",
-		"troika-three-text": "^0.48.0-unicode.3"
+		"ratk": "file:../ratk-build.tgz",
+		"three": "npm:super-three@0.158.0",
+		"troika-three-text": "0.49.0"
 	}
 }

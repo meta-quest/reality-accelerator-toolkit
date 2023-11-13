@@ -5,48 +5,86 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import * as THREE from 'three';
+import { ARButton, RealityAccelerator } from 'ratk';
+import {
+	BoxGeometry,
+	DirectionalLight,
+	HemisphereLight,
+	Mesh,
+	MeshBasicMaterial,
+	PerspectiveCamera,
+	Scene,
+	WebGLRenderer,
+} from 'three';
 
-import { BUTTONS, GamepadWrapper } from 'gamepad-wrapper';
-
-import { ARButton } from 'ratk';
-import { MeshBasicMaterial } from 'three';
-import { RealityAccelerator } from 'ratk';
 import { Text } from 'troika-three-text';
 import { XRControllerModelFactory } from 'three/examples/jsm/webxr/XRControllerModelFactory.js';
 
+// Global variables for scene components
 let camera, scene, renderer, controller;
-/** @type {RealityAccelerator} */
-let ratk;
-let recoveredPersistentAnchors = false;
+let ratk; // Instance of Reality Accelerator
+let pendingAnchorData = null;
 
+// Initialize and animate the scene
 init();
 animate();
 
+/**
+ * Initializes the scene, camera, renderer, lighting, and AR functionalities.
+ */
 function init() {
-	scene = new THREE.Scene();
+	scene = new Scene();
+	setupCamera();
+	setupLighting();
+	setupRenderer();
+	setupARButton();
+	setupController();
+	window.addEventListener('resize', onWindowResize);
+	setupRATK();
+}
 
-	camera = new THREE.PerspectiveCamera(
+/**
+ * Sets up the camera for the scene.
+ */
+function setupCamera() {
+	camera = new PerspectiveCamera(
 		50,
 		window.innerWidth / window.innerHeight,
 		0.1,
 		10,
 	);
 	camera.position.set(0, 1.6, 3);
+}
 
-	scene.add(new THREE.HemisphereLight(0x606060, 0x404040));
-
-	const light = new THREE.DirectionalLight(0xffffff);
+/**
+ * Sets up the lighting for the scene.
+ */
+function setupLighting() {
+	scene.add(new HemisphereLight(0x606060, 0x404040));
+	const light = new DirectionalLight(0xffffff);
 	light.position.set(1, 1, 1).normalize();
 	scene.add(light);
+}
 
-	renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+/**
+ * Sets up the renderer for the scene.
+ */
+function setupRenderer() {
+	renderer = new WebGLRenderer({
+		alpha: true,
+		antialias: true,
+		multiviewStereo: true,
+	});
 	renderer.setPixelRatio(window.devicePixelRatio);
 	renderer.setSize(window.innerWidth, window.innerHeight);
-	renderer.outputEncoding = THREE.sRGBEncoding;
 	renderer.xr.enabled = true;
 	document.body.appendChild(renderer.domElement);
+}
 
+/**
+ * Sets up the AR button and web launch functionality.
+ */
+function setupARButton() {
 	const arButton = document.getElementById('ar-button');
 	const webLaunchButton = document.getElementById('web-launch-button');
 	webLaunchButton.onclick = () => {
@@ -69,131 +107,184 @@ function init() {
 			webLaunchButton.style.display = 'block';
 		},
 	});
+}
 
+/**
+ * Sets up the XR controller and its event listeners.
+ */
+function setupController() {
 	controller = renderer.xr.getController(0);
-	controller.addEventListener('connected', async function (event) {
-		this.gamepadWrapper = new GamepadWrapper(event.data.gamepad);
-		this.hitTestTarget = await ratk.createHitTestTargetFromControllerSpace(
-			event.data.handedness,
-		);
-	});
-	controller.addEventListener('disconnected', function () {
-		this.remove(this.children[0]);
-		this.gamepadWrapper = null;
-		ratk.deleteHitTestTarget(this.hitTestTarget)
-		this.hitTestTarget = null;
-	});
+	controller.addEventListener('connected', handleControllerConnected);
+	controller.addEventListener('disconnected', handleControllerDisconnected);
+	controller.addEventListener('selectstart', handleSelectStart);
+	controller.addEventListener('squeezestart', handleSqueezeStart);
 	scene.add(controller);
 
 	const controllerModelFactory = new XRControllerModelFactory();
-
 	const controllerGrip = renderer.xr.getControllerGrip(0);
 	controllerGrip.add(
 		controllerModelFactory.createControllerModel(controllerGrip),
 	);
 	scene.add(controllerGrip);
-
-	window.addEventListener('resize', onWindowResize);
-
-	// RATK code
-	ratk = new RealityAccelerator(renderer.xr);
-	ratk.onPlaneAdded = (plane) => {
-		const mesh = plane.planeMesh;
-		mesh.material = new MeshBasicMaterial({
-			wireframe: true,
-			color: Math.random() * 0xffffff,
-		});
-	};
-	ratk.onMeshAdded = (mesh) => {
-		const meshMesh = mesh.meshMesh;
-		meshMesh.material = new MeshBasicMaterial({
-			wireframe: true,
-			color: Math.random() * 0xffffff,
-		});
-		meshMesh.geometry.computeBoundingBox();
-		console.log(meshMesh.geometry.boundingBox);
-		const semanticLabel = new Text();
-		meshMesh.add(semanticLabel);
-		semanticLabel.text = mesh.semanticLabel;
-		semanticLabel.anchorX = 'center';
-		semanticLabel.anchorY = 'bottom';
-		semanticLabel.fontSize = 0.1;
-		semanticLabel.color = 0x000000;
-		semanticLabel.sync();
-		semanticLabel.position.y = meshMesh.geometry.boundingBox.max.y;
-		mesh.userData.semanticLabelMesh = semanticLabel;
-	};
-	scene.add(ratk.root);
 }
 
-function updateController(controller) {
-	if (controller.gamepadWrapper && controller.hitTestTarget) {
-		controller.gamepadWrapper.update();
-		if (controller.gamepadWrapper.getButtonClick(BUTTONS.XR_STANDARD.TRIGGER)) {
-			// RATK code
-			ratk
-				.createAnchor(
-					controller.hitTestTarget.position,
-					controller.hitTestTarget.quaternion,
-					true,
-				)
-				.then((anchor) => {
-					const geometry = new THREE.BoxGeometry(0.05, 0.05, 0.05);
-					const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
-					const cube = new THREE.Mesh(geometry, material);
-					anchor.add(cube);
-					console.log(anchor.isPersistent, anchor.anchorID);
-				});
-		}
-		if (controller.gamepadWrapper.getButtonClick(BUTTONS.XR_STANDARD.SQUEEZE)) {
-			ratk.anchors.forEach((anchor) => {
-				console.log(anchor.anchorID);
-				ratk.deleteAnchor(anchor);
-			});
-		}
+/**
+ * Handles controller connection events.
+ */
+function handleControllerConnected(event) {
+	ratk
+		.createHitTestTargetFromControllerSpace(event.data.handedness)
+		.then((hitTestTarget) => {
+			this.hitTestTarget = hitTestTarget;
+		});
+}
+
+/**
+ * Handles controller disconnection events.
+ */
+function handleControllerDisconnected() {
+	ratk.deleteHitTestTarget(this.hitTestTarget);
+	this.hitTestTarget = null;
+}
+
+/**
+ * Handles 'selectstart' event for the controller.
+ */
+function handleSelectStart() {
+	if (this.hitTestTarget) {
+		pendingAnchorData = {
+			position: this.hitTestTarget.position.clone(),
+			quaternion: this.hitTestTarget.quaternion.clone(),
+		};
 	}
 }
 
+/**
+ * Handles 'squeezestart' event for the controller.
+ */
+function handleSqueezeStart() {
+	ratk.anchors.forEach((anchor) => {
+		console.log(anchor.anchorID);
+		ratk.deleteAnchor(anchor);
+	});
+}
+
+/**
+ * Sets up the Reality Accelerator instance and its event handlers.
+ */
+function setupRATK() {
+	ratk = new RealityAccelerator(renderer.xr);
+	ratk.onPlaneAdded = handlePlaneAdded;
+	ratk.onMeshAdded = handleMeshAdded;
+	scene.add(ratk.root);
+	renderer.xr.addEventListener('sessionstart', () => {
+		setTimeout(() => {
+			ratk.restorePersistentAnchors().then(() => {
+				ratk.anchors.forEach((anchor) => {
+					buildAnchorMarker(anchor, true);
+				});
+			});
+		}, 1000);
+	});
+}
+
+/**
+ * Handles the addition of a new plane detected by RATK.
+ */
+function handlePlaneAdded(plane) {
+	const mesh = plane.planeMesh;
+	mesh.material = new MeshBasicMaterial({
+		wireframe: true,
+		color: Math.random() * 0xffffff,
+	});
+}
+
+/**
+ * Handles the addition of a new mesh detected by RATK.
+ */
+function handleMeshAdded(mesh) {
+	const meshMesh = mesh.meshMesh;
+	meshMesh.material = new MeshBasicMaterial({
+		wireframe: true,
+		color: Math.random() * 0xffffff,
+	});
+	meshMesh.geometry.computeBoundingBox();
+	const semanticLabel = new Text();
+	meshMesh.add(semanticLabel);
+	semanticLabel.text = mesh.semanticLabel;
+	semanticLabel.anchorX = 'center';
+	semanticLabel.anchorY = 'bottom';
+	semanticLabel.fontSize = 0.1;
+	semanticLabel.color = 0x000000;
+	semanticLabel.sync();
+	semanticLabel.position.y = meshMesh.geometry.boundingBox.max.y;
+	mesh.userData.semanticLabelMesh = semanticLabel;
+}
+
+/**
+ * Handles window resize events.
+ */
 function onWindowResize() {
 	camera.aspect = window.innerWidth / window.innerHeight;
 	camera.updateProjectionMatrix();
-
 	renderer.setSize(window.innerWidth, window.innerHeight);
 }
 
+/**
+ * Animation loop for the scene.
+ */
 function animate() {
 	renderer.setAnimationLoop(render);
 }
 
+/**
+ * Render loop for the scene, updating AR functionalities.
+ */
 function render() {
-	if (renderer.xr.isPresenting && !recoveredPersistentAnchors) {
-		setTimeout(() => {
-			ratk.restorePersistentAnchors().then(() => {
-				ratk.anchors.forEach((anchor) => {
-					console.log(anchor);
-					const geometry = new THREE.BoxGeometry(0.05, 0.05, 0.05);
-					const material = new THREE.MeshBasicMaterial({ color: 0x0ffff0 });
-					const cube = new THREE.Mesh(geometry, material);
-					anchor.add(cube);
-				});
-			});
-		}, 1000);
-
-		recoveredPersistentAnchors = true;
-	}
-
-	if (renderer.xr.isPresenting) {
-		recoveredPersistentAnchors = false;
-	}
-
-	updateController(controller);
-
-	// RATK code
+	handlePendingAnchors();
 	ratk.update();
+	updateSemanticLabels();
+	renderer.render(scene, camera);
+}
+
+/**
+ * Handles the creation of anchors based on pending data.
+ */
+function handlePendingAnchors() {
+	if (pendingAnchorData) {
+		ratk
+			.createAnchor(
+				pendingAnchorData.position,
+				pendingAnchorData.quaternion,
+				true,
+			)
+			.then((anchor) => {
+				buildAnchorMarker(anchor, false);
+			});
+		pendingAnchorData = null;
+	}
+}
+
+function buildAnchorMarker(anchor, isRecovered) {
+	const geometry = new BoxGeometry(0.05, 0.05, 0.05);
+	const material = new MeshBasicMaterial({
+		color: isRecovered ? 0xff0000 : 0x00ff00,
+	});
+	const cube = new Mesh(geometry, material);
+	anchor.add(cube);
+	console.log(
+		`anchor created (id: ${anchor.anchorID}, isPersistent: ${anchor.isPersistent}, isRecovered: ${isRecovered})`,
+	);
+}
+
+/**
+ * Updates semantic labels for each mesh.
+ */
+function updateSemanticLabels() {
 	ratk.meshes.forEach((mesh) => {
 		const semanticLabel = mesh.userData.semanticLabelMesh;
-		semanticLabel.lookAt(camera.position);
+		if (semanticLabel) {
+			semanticLabel.lookAt(camera.position);
+		}
 	});
-
-	renderer.render(scene, camera);
 }

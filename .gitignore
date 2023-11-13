@@ -19,4 +19,4 @@ node_modules/
 
 .DS_Store
 
-*.raw.glb
+ratk-build.tgz
