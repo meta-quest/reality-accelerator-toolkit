@@ -43,6 +43,12 @@ export class Plane extends TransformObject {
 	get lastUpdated() {
 		return this._xrPlane.lastChangedTime;
 	}
+
+	get semanticLabel() {
+		// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+		// @ts-ignore
+		return this._xrPlane.semanticLabel;
+	}
 }
 
 const createGeometryFromPolygon = (polygon: DOMPointReadOnly[]) => {

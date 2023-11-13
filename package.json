@@ -8,7 +8,7 @@
 		"dist"
 	],
 	"scripts": {
-		"build": "tsc && npm pack && mv *.tgz ratk-build.tgz",
+		"build": "tsc && rimraf *.tgz && npm pack && mv *.tgz ratk-build.tgz",
 		"doc": "typedoc && mv example/dist/ docs/example",
 		"lint": "eslint ./src",
 		"format": "prettier --write ./src/**/*",
@@ -48,13 +48,14 @@
 	"devDependencies": {
 		"@types/node": "^18.7.13",
 		"@types/three": "^0.149.0",
-		"@types/webxr": "^0.5.2",
+		"@types/webxr": "^0.5.8",
 		"@typescript-eslint/eslint-plugin": "^5.55.0",
 		"@typescript-eslint/parser": "^5.55.0",
 		"eslint": "^8.36.0",
 		"eslint-config-prettier": "^8.5.0",
 		"npm-watch": "^0.11.0",
 		"prettier": "^2.7.1",
+		"rimraf": "^5.0.5",
 		"typedoc": "^0.23.21",
 		"typedoc-plugin-extras": "^2.3.0",
 		"typescript": "^4.9.5"

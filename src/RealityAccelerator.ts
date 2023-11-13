@@ -18,7 +18,7 @@ import {
 	updateHitTestTarget,
 } from './HitTestTarget';
 import { Plane, updatePlane } from './Plane';
-import { RMesh, XRMesh, XRMeshSet, updateMesh } from './Mesh';
+import { RMesh, updateMesh } from './Mesh';
 
 import { updateTransformObject } from './TransformObject';
 
@@ -88,7 +88,7 @@ export class RealityAccelerator {
 		const session = this._xrManager.getSession();
 		if (session !== this._currentSession) {
 			this._currentSession = session;
-			this._sessionUpdated()
+			this._sessionUpdated();
 		}
 
 		this._checkPlaneDiff(frame);
@@ -113,11 +113,10 @@ export class RealityAccelerator {
 	}
 
 	private async _sessionUpdated() {
-
 		this._anchors.forEach((anchor) => {
 			this._anchors.delete(anchor);
 			this._root.remove(anchor);
-		})
+		});
 
 		this._hitTestTargets.forEach((hitTestTarget) => {
 			this._root.remove(hitTestTarget);

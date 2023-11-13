@@ -14,18 +14,6 @@ import {
 } from 'three';
 import { TransformObject, updateTransformObject } from './TransformObject';
 
-// XRMesh type def
-
-export type XRMeshSet = Set<XRMesh>;
-
-export interface XRMesh {
-	meshSpace: XRSpace;
-	vertices: Float32Array;
-	indices: Float32Array;
-	lastChangedTime: number;
-	semanticLabel?: string;
-}
-
 export class RMesh extends TransformObject {
 	private _xrMesh: XRMesh;
 
@@ -34,10 +22,6 @@ export class RMesh extends TransformObject {
 	public lastUpdatedByRATK = -Infinity;
 
 	public meshMesh: Mesh;
-
-	public boundingRectangleWidth: number;
-
-	public boundingRectangleHeight: number;
 
 	public constructor(xrMesh: XRMesh) {
 		super(xrMesh.meshSpace);
