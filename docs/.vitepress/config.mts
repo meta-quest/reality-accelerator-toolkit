@@ -1,11 +1,15 @@
 import { defineConfig } from 'vitepress';
 
 export default defineConfig({
-	title: 'Reality Accelerator Toolkit',
+	title: 'RATK',
 	description:
 		'Comprehensive WebXR utilities library for mixed reality features in WebXR applications',
+	head: [
+		['link', { rel: 'icon', href: '/reality-accelerator-toolkit/favicon.ico' }],
+	],
 	themeConfig: {
-		// https://vitepress.dev/reference/default-theme-config
+		siteTitle: 'RATK',
+		logo: '/assets/meta.svg',
 		nav: [
 			{ text: 'Home', link: '/' },
 			{ text: 'API Reference', link: '/api-reference' },

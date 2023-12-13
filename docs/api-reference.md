@@ -1,5 +1,6 @@
 ---
 layout: home
+title: 'API Reference'
 
 hero:
   name: 'API Reference'
