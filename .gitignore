@@ -13,9 +13,13 @@ build/
 dist/
 node_modules/
 
-/.vscode/
+.vscode/*
 
 # blender backups
 *.blend?
 
 .DS_Store
+
+# Meta Quest agentic tooling: keep VS Code/Cursor workspace recommendations
+!.vscode/extensions.json
+!.vscode/mcp.json
